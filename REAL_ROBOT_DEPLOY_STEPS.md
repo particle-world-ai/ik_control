@@ -9,10 +9,11 @@
 | 环境 | 用途 |
 |---|---|
 | Windows PowerShell | 上传部署包、可选的本地离线检查 |
-| 同事已部署控制栈的 Linux 主机或容器 | ROS 状态检查和真机轨迹执行 |
+| Linux 宿主机（SSH 登录后） | 解压部署包、查看容器、拷贝文件、进入容器 |
+| 同事已部署 ROS 控制环境的 Docker 容器 | ROS 状态检查和真机轨迹执行 |
 | Franka Desk / LABS 界面 | 解锁关节、启用 FCI、确认硬件上线 |
 
-本文的 `用户名@控制电脑IP`、DDS 路径和现场工作空间路径都是需要替换的参数。不要原样输入占位符。
+本文的 `用户名@控制电脑IP`、容器名称、DDS 路径和现场工作空间路径都是需要替换的参数。不要原样输入占位符。
 
 ## 2. 上传部署包并解压
 
@@ -38,7 +39,7 @@ cd ~/fr3_csv_bundle/fr3_csv_deploy
 ls csv_to_fr3.py configs/fr3_csv_bridge.json outputs/grasp_rrt/trajectory.csv
 ```
 
-后续终端都在这个目录操作。若 ROS 控制环境在 Docker 中，需把解压目录放进已有挂载目录，或复制进对应容器，然后进入该容器执行后续命令。本文无法确定现场容器名称，不提供猜测的 `docker exec` 或驱动启动命令。
+这一步解压在 Linux 宿主机上。现场需要在 Docker 内才能发送 ROS，因此还要完成下一节的拷贝和进入容器操作。
 
 包内主要文件：
 
@@ -56,6 +57,66 @@ fr3_csv_deploy/
 └── MANIFEST.json
 ```
 
+### 2.1 在宿主机找到正在运行的 ROS 容器
+
+在 SSH 登录后的 **Linux 宿主机终端**执行：
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+```
+
+找到同事实际用于 ROS 通信的运行中容器。不要随意新建一个普通 Python 容器；它可能缺少 ROS、DDS 配置、控制栈工作空间及现场网络设置。
+
+把下面的容器名称替换成 `docker ps` 中实际的名称：
+
+```bash
+export ROS_CONTAINER=替换为实际ROS容器名
+docker inspect --format '{{.State.Running}}' "$ROS_CONTAINER"
+```
+
+预期输出 `true`。如果 Docker 命令提示权限不足，使用现场已授权的 Docker 账户，或按现场方式给相关命令加 `sudo`。
+
+### 2.2 把整个部署目录拷贝进容器
+
+仍在 **宿主机终端**执行：
+
+```bash
+docker exec "$ROS_CONTAINER" mkdir -p /workspace/fr3_csv_deploy
+
+docker cp "$HOME/fr3_csv_bundle/fr3_csv_deploy/." \
+  "${ROS_CONTAINER}:/workspace/fr3_csv_deploy/"
+
+docker exec "$ROS_CONTAINER" ls -l \
+  /workspace/fr3_csv_deploy/csv_to_fr3.py \
+  /workspace/fr3_csv_deploy/configs/fr3_csv_bridge.json \
+  /workspace/fr3_csv_deploy/outputs/grasp_rrt/trajectory.csv
+```
+
+拷贝整个目录以保留 `configs` 和 `outputs` 的相对结构，不能只拷贝 Python 文件。如果 `/workspace` 不可写，请改用该容器的可写工作目录，并同步替换本文后续对应路径。
+
+以后修改 Windows 或宿主机上的脚本、配置或 CSV 后，需要重新上传并执行 `docker cp`，容器中的副本不会自动更新。更新文件时先确保回放程序已经停止。
+
+### 2.3 进入容器再运行 ROS 命令
+
+在 **宿主机终端**执行：
+
+```bash
+docker exec -it -w /workspace/fr3_csv_deploy "$ROS_CONTAINER" bash
+```
+
+进入后，在 **容器终端**确认：
+
+```bash
+pwd
+ls csv_to_fr3.py configs/fr3_csv_bridge.json outputs/grasp_rrt/trajectory.csv
+```
+
+预期目录为 `/workspace/fr3_csv_deploy`。后文第 4～9 节中的 ROS、Python 和查看结果命令均在这个容器内执行。
+
+`docker exec` 不会继承宿主机临时设置的环境变量；每次重新进入容器，都需要按第 4 节重新加载 ROS、现场工作空间和 DDS 环境。DDS XML 也必须是容器内可访问的路径；如果原有控制环境已经正确配置，不要改成宿主机上才存在的路径。
+
+不要为了这次回放重新启动或替换正在使用的控制容器。当前文件通过 `docker cp` 写入容器，删除并重建容器可能丢失它们；需要长期保存时使用现场已有的持久化挂载目录。
+
 ## 3. 让机器人和已有控制栈上线
 
 按照同事现场的方式启动机器人驱动、coordinator、follower 和夹爪桥。部署仓库没有包含完整的底层启动环境，以下硬件顺序来自同事文档：
@@ -68,7 +129,7 @@ fr3_csv_deploy/
 
 ## 4. 加载 ROS 和 DDS 环境
 
-在已有控制栈的 Linux 环境中执行：
+在第 2.3 节进入的 **Docker 容器终端**中执行：
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -235,7 +296,7 @@ tail -n 5 outputs/real_robot_bridge/live_feedback.csv
 
 ## 10. 停止与常见报错
 
-运行终端按 `Ctrl+C`，脚本会尝试释放控制器，失败时尝试 coordinator stop。需要从第二个、同样已加载 ROS/DDS 环境的终端请求软件停止时，可以执行：
+运行终端按 `Ctrl+C`，脚本会尝试释放控制器，失败时尝试 coordinator stop。需要从第二个终端请求软件停止时，先按第 2.3 节进入同一 ROS 容器，再按第 4 节加载 ROS/DDS 环境，然后执行：
 
 ```bash
 ros2 service call /right/controller_coordinator/stop std_srvs/srv/Trigger '{}'
@@ -253,5 +314,22 @@ ros2 service call /right/controller_coordinator/stop std_srvs/srv/Trigger '{}'
 | 关节名相关错误 | 核对配置与实际 JointState 的 name 字段 |
 | `Controller not FOLLOWING` / 握手超时 | 检查驱动、FCI、coordinator 和 follower 状态 |
 | `Tracking error` | 停下检查跟踪滞后、控制器状态或机械阻挡，不直接提高阈值 |
+
+## 11. 把容器内的执行结果拷回宿主机
+
+回放结束后，在另一个 **宿主机终端**执行；重新填写实际容器名称：
+
+```bash
+export ROS_CONTAINER=替换为实际ROS容器名
+export FR3_RESULT_DIR="$HOME/fr3_csv_results_$(date +%Y%m%d_%H%M%S)"
+
+mkdir -p "$FR3_RESULT_DIR"
+docker cp "${ROS_CONTAINER}:/workspace/fr3_csv_deploy/outputs/real_robot_bridge" \
+  "$FR3_RESULT_DIR/"
+
+ls -l "$FR3_RESULT_DIR/real_robot_bridge"
+```
+
+这里保存的是容器内实际生成的结果。宿主机原解压目录中的同名 `outputs` 不会随容器运行自动更新；若执行时指定了其他 `--out` 路径，需相应修改拷贝源路径。
 
 更完整的接口与实现说明见同目录 `REAL_ROBOT_CSV.md`。
