@@ -1,0 +1,117 @@
+{
+  "mode": "offline_only_no_ROS_import_or_robot_connection",
+  "csv": "E:\\particle_world\\camera_loc\\outputs\\grasp_rrt\\trajectory.csv",
+  "csv_sha256": "449b090cf2c7e191a1d5d83db767722e4554f6b2e418c70bf085b63a4b51ea06",
+  "config": {
+    "source": "pw-xpolicy-deploy-main/DeployLab/Franka_Duo (local source, October 2026)",
+    "side": "right",
+    "csv_joints": [
+      "right_fr3v2_1_joint1",
+      "right_fr3v2_1_joint2",
+      "right_fr3v2_1_joint3",
+      "right_fr3v2_1_joint4",
+      "right_fr3v2_1_joint5",
+      "right_fr3v2_1_joint6",
+      "right_fr3v2_1_joint7"
+    ],
+    "real_joints": [
+      "right_fr3_joint1",
+      "right_fr3_joint2",
+      "right_fr3_joint3",
+      "right_fr3_joint4",
+      "right_fr3_joint5",
+      "right_fr3_joint6",
+      "right_fr3_joint7"
+    ],
+    "csv_gripper": "right_robotiq_85_left_knuckle_joint",
+    "joint_min": [
+      -2.7437,
+      -1.7837,
+      -2.9007,
+      -3.0421,
+      -2.8065,
+      0.5445,
+      -3.0159
+    ],
+    "joint_max": [
+      2.7437,
+      1.7837,
+      2.9007,
+      -0.1518,
+      2.8065,
+      4.5169,
+      3.0159
+    ],
+    "control_hz": 100,
+    "max_joint_speed": 0.15,
+    "max_gripper_speed": 0.2,
+    "gripper_deadband": 0.02,
+    "start_tolerance": 0.01,
+    "tracking_abort": 0.25,
+    "settle_tolerance": 0.02,
+    "settle_timeout_s": 20.0,
+    "state_timeout_s": 0.5,
+    "passive_side": "left",
+    "passive_joints": [
+      "left_fr3_joint1",
+      "left_fr3_joint2",
+      "left_fr3_joint3",
+      "left_fr3_joint4",
+      "left_fr3_joint5",
+      "left_fr3_joint6",
+      "left_fr3_joint7"
+    ],
+    "passive_expected": [
+      0.0,
+      -0.4,
+      0.0,
+      -1.7,
+      0.0,
+      1.5,
+      0.5
+    ],
+    "passive_tolerance": 0.05
+  },
+  "original_duration_s": 22.216666666666665,
+  "time_scale": 4.3735598841637175,
+  "resampled_duration_s": 97.17,
+  "command_rows": 9718,
+  "max_joint_speed_rad_s": 0.07980890619968249,
+  "max_width_speed_per_s": 0.2,
+  "max_gripper_deadband_error": 0.019995039621373056,
+  "initial_q_rad": [
+    0.0,
+    -0.4000000046691219,
+    0.0,
+    -1.6999999865542543,
+    0.0,
+    1.5000000507987206,
+    0.5000000058364024
+  ],
+  "final_q_rad": [
+    -0.28551084493983264,
+    0.32896436907211035,
+    -0.48727317304414125,
+    -1.7186598282409877,
+    -0.8825273993264681,
+    2.295006148047636,
+    0.34624850495998216
+  ],
+  "phase_order": [
+    "rrt_approach",
+    "settle_above",
+    "vertical_descent",
+    "settle_at_grasp",
+    "close_gripper",
+    "hold_grasp",
+    "vertical_lift",
+    "hold_lifted"
+  ],
+  "limits": [
+    "This report covers offline export only; see live_status.json for any subsequent live attempt",
+    "Real joint names and joint zero/sign must be verified",
+    "Actual scene, TCP, passive arm and initial state must match the plan",
+    "Follower lag changes executed path; this is not a certified collision check",
+    "Gripper state alone does not confirm successful object contact"
+  ]
+}

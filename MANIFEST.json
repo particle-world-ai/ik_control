@@ -1,0 +1,48 @@
+{
+  "bundle": "fr3_csv_deploy_20261023_104930",
+  "entrypoint": "csv_to_fr3.py",
+  "hardware_tested": false,
+  "offline_tests": "10 passed",
+  "files": {
+    "csv_to_fr3.py": {
+      "bytes": 19533,
+      "sha256": "75372b8c8e623d0bde14d53ae1bbc787172bf1de1b2b968b1582fd512b718bb4"
+    },
+    "configs/fr3_csv_bridge.json": {
+      "bytes": 1174,
+      "sha256": "4720d0c150e5cac8dd6053a4838d8182bdc18b1ff968c5a2ad50f0d47f77c3fe"
+    },
+    "outputs/grasp_rrt/trajectory.csv": {
+      "bytes": 233429,
+      "sha256": "449b090cf2c7e191a1d5d83db767722e4554f6b2e418c70bf085b63a4b51ea06"
+    },
+    "outputs/grasp_rrt/trajectory.json": {
+      "bytes": 363737,
+      "sha256": "4f7ee9f9c8b13e2551f16de354b40f1610ea6936a337fe12d4cc08a12a0f5304"
+    },
+    "outputs/real_robot_bridge/command_stream.csv": {
+      "bytes": 1776915,
+      "sha256": "75a05464be7b74050a59083433eebb853784b39d573b3135384c30db2f28a689"
+    },
+    "outputs/real_robot_bridge/validation.json": {
+      "bytes": 3075,
+      "sha256": "4b79b850a659affae1ce4230c85a5401f71e0bdf81052728e3a5e6e198133ae4"
+    },
+    "REAL_ROBOT_CSV.md": {
+      "bytes": 6836,
+      "sha256": "3c998597d9671e79f457f22eda0355fd163ac40189c5863cb36226379e52cf79"
+    },
+    "tests/test_csv_to_fr3.py": {
+      "bytes": 3892,
+      "sha256": "977cbcc65ffd726a598380943688f47d82687dd5f7033af64f9783024c3385cd"
+    },
+    "README.md": {
+      "bytes": 2266,
+      "sha256": "e8a5004bbc786afcf465c5b9837cd81a318b8118b4082423eb19a6b2ab418cbb"
+    },
+    "requirements-offline.txt": {
+      "bytes": 15,
+      "sha256": "f9a160cf58b3028e4dcaef8b4a9bc9d1085cdc8ebf2660f4a6179418b893c771"
+    }
+  }
+}
